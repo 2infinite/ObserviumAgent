@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: 2infinite
+  description: An Ansible role that installs Observium UNIX Agent on Centos 
+  license: BSD
+  min_ansible_version: 1.9
+  platforms:
+  - name: EL
+    versions:
+    - all 
+  galaxy_tags:
+    - Observium
+    - monitoring
+

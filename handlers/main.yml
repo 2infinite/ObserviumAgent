@@ -1,0 +1,7 @@
+---
+    - name: reload snmpd
+      service: name=snmpd state=reloaded
+
+    - name: reload xinetd
+      service: name=xinetd state=reloaded
+

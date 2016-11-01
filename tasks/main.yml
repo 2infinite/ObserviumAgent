@@ -1,0 +1,61 @@
+---
+# Setup Observium Agent
+  - name: Install xinetd and net-snmp
+    yum: name={{ item }} state=latest
+    with_items:
+     - xinetd
+     - net-snmp
+
+  - name: Ensure xinetd and snmpd is running (and enable it at boot)
+    service: name={{ item }} state=started enabled=yes
+    with_items:
+              - xinetd
+              - snmpd
+
+  - name: Change rocommunity to CHANGEME
+    lineinfile: dest=/etc/snmp/snmpd.conf regexp="^rocommunity CHANGEME "  line="rocommunity CHANGEME 10.1.1.1"
+    notify:
+          - reload snmpd
+
+  - name: Change syscontact
+    lineinfile: dest=/etc/snmp/snmpd.conf regexp="^syscontact "  line="syscontact root@domain.com"
+    notify:
+          - reload snmpd
+
+  - name: Change syslocation
+    lineinfile: dest=/etc/snmp/snmpd.conf regexp="^syslocation "  line="syslocation {{ syslocation }}"
+    notify:
+          - reload snmpd
+
+  - name: Change for distro
+    lineinfile: dest=/etc/snmp/snmpd.conf regexp="^extend .1.3.6.1.4.1.2021.7890.1 "  line="extend .1.3.6.1.4.1.2021.7890.1 distro /usr/local/bin/distro"
+    notify:
+          - reload snmpd
+
+  - name: Copy observium_agent_xinetd
+    copy: src=observium_agent_xinetd dest=/etc/xinetd.d/observium_agent_xinetd mode="g-rwx,o-rwx"
+    notify:
+          - reload xinetd
+
+  - name: Copy observium_agent
+    copy: src=observium_agent dest=/usr/local/bin/observium_agent mode="u+rwx,g-rwx,o-rwx"
+    notify:
+           - reload xinetd
+
+  - name: Copy distro
+    copy: src=distro dest=/usr/local/bin/distro mode=0700
+
+  - name: Create a directory /usr/local/lib/observium_agent/local  
+    file: path=/usr/local/lib/observium_agent/local state=directory mode=0700
+
+  - name: Copy agent-local/rpm
+    copy: src=agent-local/rpm dest=/usr/local/lib/observium_agent/local/rpm mode=0700
+
+  - name: Install dmidecode
+    yum: name=dmidecode state=latest
+    when: BareMetal
+
+  - name: Copy agent-local/dmi
+    copy: src=agent-local/dmi dest=/usr/local/lib/observium_agent/local/dmi mode=0700
+    when: BareMetal
+
